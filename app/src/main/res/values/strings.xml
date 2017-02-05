@@ -9,4 +9,5 @@
     <string name="item_price">Price: </string>
     <string name="item_discount">Discount: </string>
     <string name="item_url">More detail? Click Me</string>
+    <string name="item_share">Share this item</string>
 </resources>

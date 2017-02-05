@@ -211,13 +211,27 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/item_url"
                                 android:textStyle="bold"
-                                android:textSize="13sp"
+                                android:textSize="14sp"
                                 android:layout_marginEnd="10dp"
                                 android:textColor="@color/colorAccent"
                                 android:autoLink="web"
                                 android:clickable="true"
                                 android:linksClickable="true"
                                 />
+
+                            <TextView
+                                android:id="@+id/text_share"
+                                android:text="@string/item_share"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:layout_marginEnd="10dp"
+                                android:textStyle="bold"
+                                android:textSize="14sp"
+                                android:textColor="@color/colorAccent"
+                                android:clickable="true"
+                                android:linksClickable="true"
+                                android:layout_weight="1" />
                         </LinearLayout>
                     </LinearLayout>
 

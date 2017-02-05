@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private Result item;
     private ZapposApi myZappoSerice;
     private RetainedFragment dataFragment;
-
+    private String querySent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +84,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        TextView text_share = (TextView) findViewById(R.id.text_share);
+        text_share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
+                String keyTerm = "#Copy Me and Open Zappos#" + querySent;
+                intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
+                startActivity(Intent.createChooser(intent, "Share to"));
+            }
+        });
+
 
         SearchView searchView = (SearchView) findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -102,15 +115,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void startSearch(String query) {
+    public void startSearch(final String query) {
         if (query.length() != 0){
             Call<ItemBundle> call = myZappoSerice.getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
             call.enqueue(new Callback<ItemBundle>() {
                 @Override
                 public void onResponse(Call<ItemBundle> call, Response<ItemBundle> response) {
                     ItemBundle body = response.body();
+                    if (body.getResults().size()==0){
+                        Toast.makeText(MainActivity.this, "Oh, nothing comes. Try other key words", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     Result firstResult = body.getResults().get(0);
                     updateView(firstResult);
+                    querySent = query;
                     // display card and cart
                     View card = findViewById(R.id.card_view);
                     card.setVisibility(View.VISIBLE);
