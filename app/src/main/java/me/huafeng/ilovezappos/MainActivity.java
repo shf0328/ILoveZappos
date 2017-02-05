@@ -1,11 +1,14 @@
 package me.huafeng.ilovezappos;
 
+import android.app.ActionBar;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -80,12 +83,26 @@ public class MainActivity extends AppCompatActivity {
                 startWebBrower();
             }
         });
+
+
+        SearchView searchView = (SearchView) findViewById(R.id.search);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                startSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
     }
 
 
-    public void startSearch(View view) {
-        EditText editText = (EditText) findViewById(R.id.edit_message);
-        String query = editText.getText().toString();
+    public void startSearch(String query) {
         if (query.length() != 0){
             Call<ItemBundle> call = myZappoSerice.getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
             call.enqueue(new Callback<ItemBundle>() {
@@ -112,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
                 InputMethodManager imManager = (InputMethodManager)getSystemService(this.INPUT_METHOD_SERVICE);
                 imManager.hideSoftInputFromWindow(viewFocus.getWindowToken(), 0);
             }
+            SearchView searchView = (SearchView) findViewById(R.id.search);
+            searchView.clearFocus();
         }else {
             Toast.makeText(this, "you need to type something to search", Toast.LENGTH_SHORT).show();
         }
