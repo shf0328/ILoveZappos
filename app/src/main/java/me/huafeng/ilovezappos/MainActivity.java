@@ -1,26 +1,15 @@
 package me.huafeng.ilovezappos;
 
+import android.app.FragmentManager;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
-import android.os.Build;
-import android.os.StrictMode;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,19 +24,48 @@ public class MainActivity extends AppCompatActivity {
 
     private Result item;
     private ZapposApi myZappoSerice;
+    private RetainedFragment dataFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // find the retained fragment on activity restarts
+        FragmentManager fm = getFragmentManager();
+        dataFragment = (RetainedFragment) fm.findFragmentByTag("data");
+
+        // create the fragment and data the first time
+        if (dataFragment == null) {
+            // add the fragment
+            dataFragment = new RetainedFragment();
+            fm.beginTransaction().add(dataFragment, "data").commit();
+            // load the data from the web
+            item = new Result();
+            dataFragment.setData(item);
+        }else {
+            item = dataFragment.getData();
+        }
+
+
+
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        item = new Result();
         binding.setItem(item);
-        View card = (View) findViewById(R.id.card_view);
-        card.setVisibility(View.GONE);
-        View cart = (View) findViewById(R.id.floatingActionButton);
-        cart.setVisibility(View.INVISIBLE);
+        if (item.getBrandName() == null){
+            Log.v("soon you", "wont");
+            View card = findViewById(R.id.card_view);
+            card.setVisibility(View.GONE);
+            View cart = findViewById(R.id.floatingActionButton);
+            cart.setVisibility(View.INVISIBLE);
+        }else {
+            Log.v("now you", " see me");
+            View card = findViewById(R.id.card_view);
+            card.setVisibility(View.VISIBLE);
+            View cart = findViewById(R.id.floatingActionButton);
+            cart.setVisibility(View.VISIBLE);
+        }
+
         Retrofit retrofit = new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl("https://api.zappos.com/")
@@ -77,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
                     Result firstResult = body.getResults().get(0);
                     updateView(firstResult);
                     // display card and cart
-                    View card = (View) findViewById(R.id.card_view);
+                    View card = findViewById(R.id.card_view);
                     card.setVisibility(View.VISIBLE);
-                    View cart = (View) findViewById(R.id.floatingActionButton);
+                    View cart = findViewById(R.id.floatingActionButton);
                     cart.setVisibility(View.VISIBLE);
                 }
                 @Override
@@ -87,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.i("onResponse:   =", t.getMessage());
                 }
             });
-
+            View card = findViewById(R.id.card_view);
+            card.requestFocus();
             View viewFocus = this.getCurrentFocus();
             if (viewFocus != null) {
                 InputMethodManager imManager = (InputMethodManager)getSystemService(this.INPUT_METHOD_SERVICE);
