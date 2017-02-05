@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.SearchView;
@@ -16,6 +18,10 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 import me.huafeng.ilovezappos.databinding.ActivityMainBinding;
 import retrofit2.Call;
@@ -31,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private RetainedFragment dataFragment;
     private String querySent;
     private ClipboardManager clipboard = null;
+    final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         text_link.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                animation((TextView) v);
                 startWebBrower();
             }
         });
@@ -90,12 +98,8 @@ public class MainActivity extends AppCompatActivity {
         text_share.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-                String keyTerm = getString(R.string.key_sentence) + querySent;
-                intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
-                startActivity(Intent.createChooser(intent, "Share to"));
+                animation((TextView) v);
+                shareThisItem();
             }
         });
 
@@ -131,15 +135,12 @@ public class MainActivity extends AppCompatActivity {
                 String keySentence = getString(R.string.key_sentence);
                 if ((copyText.length() > keySentence.length()) &&
                         (copyText.subSequence(0,keySentence.length()).toString().equals(keySentence))) {
+                    // start search by term pass in
                     startSearch(copyText.subSequence(keySentence.length(),copyText.length()).toString());
+                    // clear clipboard
+                    clipboard.setPrimaryClip(ClipData.newPlainText(null, ""));
                 }
             }
-//            for (int i = 0; i < count; ++i) {
-//                int count = clipData.getItemCount();
-//                ClipData.Item item = clipData.getItemAt(i);
-//                CharSequence str = item.coerceToText(MainActivity.this);
-//                Log.i("User", "item : " + i + ": " + str);
-//            }
         }
     }
 
@@ -210,5 +211,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void shareThisItem(){
+        Intent intent=new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
+        String keyTerm = getString(R.string.key_sentence) + querySent;
+        intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
+        startActivity(Intent.createChooser(intent, "Share to"));
+    }
+
+    public void animation(final TextView tv) {
+        tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorPrimaryDark, null));
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    Toast.makeText(MainActivity.this, "Oh, something wrongs", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+        handler.postDelayed(runnable, 200);
+        }
 
 }
