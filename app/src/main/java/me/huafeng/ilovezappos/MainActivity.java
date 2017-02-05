@@ -1,18 +1,19 @@
 package me.huafeng.ilovezappos;
 
-import android.app.ActionBar;
 import android.app.FragmentManager;
+import android.content.ClipData;
+import android.content.ClipDescription;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private ZapposApi myZappoSerice;
     private RetainedFragment dataFragment;
     private String querySent;
+    private ClipboardManager clipboard = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent=new Intent(Intent.ACTION_SEND);
                 intent.setType("text/plain");
                 intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-                String keyTerm = "#Copy Me and Open Zappos#" + querySent;
+                String keyTerm = getString(R.string.key_sentence) + querySent;
                 intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
                 startActivity(Intent.createChooser(intent, "Share to"));
             }
@@ -114,6 +116,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // listen clipboard
+        if (clipboard == null ) {
+            clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        }
+        if (clipboard.hasPrimaryClip()) {
+            if (clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+                ClipData clipData = clipboard.getPrimaryClip();
+                CharSequence copyText = clipData.getItemAt(0).getText();
+                String keySentence = getString(R.string.key_sentence);
+                if ((copyText.length() > keySentence.length()) &&
+                        (copyText.subSequence(0,keySentence.length()).toString().equals(keySentence))) {
+                    startSearch(copyText.subSequence(keySentence.length(),copyText.length()).toString());
+                }
+            }
+//            for (int i = 0; i < count; ++i) {
+//                int count = clipData.getItemCount();
+//                ClipData.Item item = clipData.getItemAt(i);
+//                CharSequence str = item.coerceToText(MainActivity.this);
+//                Log.i("User", "item : " + i + ": " + str);
+//            }
+        }
+    }
 
     public void startSearch(final String query) {
         if (query.length() != 0){
@@ -181,5 +209,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
+
 
 }
