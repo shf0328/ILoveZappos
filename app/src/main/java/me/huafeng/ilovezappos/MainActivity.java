@@ -1,12 +1,19 @@
 package me.huafeng.ilovezappos;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.os.Build;
+import android.os.StrictMode;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import me.huafeng.ilovezappos.databinding.ActivityMainBinding;
@@ -45,10 +53,19 @@ public class MainActivity extends AppCompatActivity {
                 .baseUrl("https://api.zappos.com/")
                 .build();
         myZappoSerice = retrofit.create(ZapposApi.class);
+
+
+        TextView text_link = (TextView) findViewById(R.id.text_item_url);
+        text_link.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startWebBrower();
+            }
+        });
     }
 
 
-    public void sendMessage(View view) {
+    public void startSearch(View view) {
         EditText editText = (EditText) findViewById(R.id.edit_message);
         String query = editText.getText().toString();
         if (query.length() != 0){
@@ -59,18 +76,18 @@ public class MainActivity extends AppCompatActivity {
                     ItemBundle body = response.body();
                     Result firstResult = body.getResults().get(0);
                     updateView(firstResult);
+                    // display card and cart
+                    View card = (View) findViewById(R.id.card_view);
+                    card.setVisibility(View.VISIBLE);
+                    View cart = (View) findViewById(R.id.floatingActionButton);
+                    cart.setVisibility(View.VISIBLE);
                 }
                 @Override
                 public void onFailure(Call<ItemBundle> call, Throwable t) {
                     Log.i("onResponse:   =", t.getMessage());
                 }
             });
-            // display card and cart
-            View card = (View) findViewById(R.id.card_view);
-            card.setVisibility(View.VISIBLE);
-            card.requestFocus();
-            View cart = (View) findViewById(R.id.floatingActionButton);
-            cart.setVisibility(View.VISIBLE);
+
             View viewFocus = this.getCurrentFocus();
             if (viewFocus != null) {
                 InputMethodManager imManager = (InputMethodManager)getSystemService(this.INPUT_METHOD_SERVICE);
@@ -100,6 +117,13 @@ public class MainActivity extends AppCompatActivity {
         item.setThumbnailImageUrl(firstResult.getThumbnailImageUrl());
     }
 
-
+    public void startWebBrower(){
+        if (item.getProductUrl() != null){
+            String url = item.getProductUrl();
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+        }
+    }
 
 }
