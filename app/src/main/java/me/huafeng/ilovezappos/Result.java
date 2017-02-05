@@ -6,7 +6,9 @@ package me.huafeng.ilovezappos;
 import android.databinding.BaseObservable;
 import android.databinding.Bindable;
 import android.databinding.BindingAdapter;
+import android.graphics.Color;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -139,10 +141,4 @@ public class Result extends BaseObservable {
         notifyPropertyChanged(BR.productName);
     }
 
-    @BindingAdapter({"bind:thumbnailImageUrl"})
-    public static void loadImage(ImageView view, String thumbnailImageUrl) {
-        Picasso.with(view.getContext())
-                .load(thumbnailImageUrl)
-                .into(view);
-    }
 }

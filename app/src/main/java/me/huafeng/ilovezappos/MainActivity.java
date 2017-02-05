@@ -6,12 +6,13 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.BindingAdapter;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.SearchView;
 import android.util.Log;
 import android.view.View;
@@ -19,9 +20,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
-import java.util.Timer;
-import java.util.TimerTask;
 
+
+import com.squareup.picasso.Picasso;
 
 import me.huafeng.ilovezappos.databinding.ActivityMainBinding;
 import retrofit2.Call;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // for screen rotation and maintain activity
         // find the retained fragment on activity restarts
         FragmentManager fm = getFragmentManager();
         dataFragment = (RetainedFragment) fm.findFragmentByTag("data");
@@ -61,30 +63,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
+        // data binding
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.setItem(item);
         if (item.getBrandName() == null){
-            Log.v("soon you", "wont");
-            View card = findViewById(R.id.card_view);
-            card.setVisibility(View.GONE);
-            View cart = findViewById(R.id.floatingActionButton);
-            cart.setVisibility(View.INVISIBLE);
+            hideCartAndCard();
         }else {
-            Log.v("now you", " see me");
-            View card = findViewById(R.id.card_view);
-            card.setVisibility(View.VISIBLE);
-            View cart = findViewById(R.id.floatingActionButton);
-            cart.setVisibility(View.VISIBLE);
+            showCartAndCard();
         }
 
+        // initial retrofit api
         Retrofit retrofit = new Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl("https://api.zappos.com/")
                 .build();
         myZappoSerice = retrofit.create(ZapposApi.class);
 
-
+        // enable click url
         TextView text_link = (TextView) findViewById(R.id.text_item_url);
         text_link.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // enable click share
         TextView text_share = (TextView) findViewById(R.id.text_share);
         text_share.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // enable search clink
         SearchView searchView = (SearchView) findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -124,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // listen clipboard
+        // listen clipboard for share text input
         if (clipboard == null ) {
             clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         }
@@ -144,31 +140,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void hideCartAndCard() {
+        View card = findViewById(R.id.card_view);
+        card.setVisibility(View.GONE);
+        View cart = findViewById(R.id.floatingActionButton);
+        cart.setVisibility(View.GONE);
+    }
+
+    public void showCartAndCard() {
+        View card = findViewById(R.id.card_view);
+        card.setVisibility(View.VISIBLE);
+        View cart = findViewById(R.id.floatingActionButton);
+        cart.setVisibility(View.VISIBLE);
+    }
+
     public void startSearch(final String query) {
         if (query.length() != 0){
             Call<ItemBundle> call = myZappoSerice.getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
             call.enqueue(new Callback<ItemBundle>() {
                 @Override
                 public void onResponse(Call<ItemBundle> call, Response<ItemBundle> response) {
+                    // retrieve result
                     ItemBundle body = response.body();
                     if (body.getResults().size()==0){
                         Toast.makeText(MainActivity.this, "Oh, nothing comes. Try other key words", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     Result firstResult = body.getResults().get(0);
+                    // update data and view
                     updateView(firstResult);
                     querySent = query;
-                    // display card and cart
-                    View card = findViewById(R.id.card_view);
-                    card.setVisibility(View.VISIBLE);
-                    View cart = findViewById(R.id.floatingActionButton);
-                    cart.setVisibility(View.VISIBLE);
+                    showCartAndCard();
                 }
+
                 @Override
                 public void onFailure(Call<ItemBundle> call, Throwable t) {
-                    Log.i("onResponse:   =", t.getMessage());
+                    Toast.makeText(MainActivity.this, "Oh, the network might have some problem", Toast.LENGTH_SHORT).show();
+                    Log.i("Api Response: ", t.getMessage());
                 }
             });
+
+            // leave focus on keyboard
             View card = findViewById(R.id.card_view);
             card.requestFocus();
             View viewFocus = this.getCurrentFocus();
@@ -184,10 +196,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addToCart(View view) {
-        View card = (View) findViewById(R.id.card_view);
-        card.setVisibility(View.GONE);
-        View cart = (View) findViewById(R.id.floatingActionButton);
-        cart.setVisibility(View.GONE);
+        hideCartAndCard();
         Toast.makeText(this, "you add it to cart", Toast.LENGTH_SHORT).show();
     }
 
@@ -228,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
                 } catch (Exception e) {
-                    // TODO Auto-generated catch block
+                    // Auto-generated catch block
                     Toast.makeText(MainActivity.this, "Oh, something wrongs", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -236,4 +245,23 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(runnable, 200);
         }
 
+    @BindingAdapter({"bind:discountColor"})
+    public static void changeColor(TextView view, String percentOff) {
+        if (percentOff == null) {
+            return;
+        }
+        if (percentOff.equals("0%")){
+            view.setTextColor(0xFF757575);
+        }else {
+            view.setTextColor(0xFFFF4081);
+        }
+
+    }
+
+    @BindingAdapter({"bind:thumbnailImageUrl"})
+    public static void loadImage(ImageView view, String thumbnailImageUrl) {
+        Picasso.with(view.getContext())
+                .load(thumbnailImageUrl)
+                .into(view);
+    }
 }
