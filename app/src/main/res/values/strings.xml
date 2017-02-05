@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ILoveZappos</string>
+    <string name="edit_message">Type any thing you want</string>
+    <string name="button_send">Search</string>
+    <string name="picture">Main Picture</string>
+    <string name="item_name">Name</string>
+    <string name="item_brand">Brand</string>
+    <string name="item_origin_price">Origin Price: </string>
+    <string name="item_price">Price: </string>
+    <string name="item_discount">Discount: </string>
+    <string name="item_url">More detail? Click Me</string>
+</resources>
