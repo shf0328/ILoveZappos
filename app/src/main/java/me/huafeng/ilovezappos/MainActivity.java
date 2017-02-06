@@ -10,8 +10,13 @@ import android.databinding.BindingAdapter;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SearchView;
 import android.util.Log;
@@ -20,7 +25,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
-
 
 import com.squareup.picasso.Picasso;
 
@@ -63,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+
         // data binding
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         binding.setItem(item);
@@ -99,7 +104,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // enable search clink
+        // enable search box click
+        CardView card_search = (CardView) findViewById(R.id.card_view_search);
+        card_search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SearchView searchView = (SearchView) findViewById(R.id.search);
+                Toast.makeText(MainActivity.this, "Oh, words", Toast.LENGTH_SHORT).show();
+                searchView.setFocusable(true);
+                searchView.setFocusableInTouchMode(true);
+                searchView.setIconified(false);
+                if(searchView.requestFocus()) {
+                    Toast.makeText(MainActivity.this, "Oh, words", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+
+        // enable search click
         SearchView searchView = (SearchView) findViewById(R.id.search);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -114,6 +136,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem item = menu.findItem(R.id.action_search);
+        android.support.v7.widget.SearchView mySearchView =
+                (android.support.v7.widget.SearchView) MenuItemCompat.getActionView(item);
+        mySearchView.setOnQueryTextListener(new android.support.v7.widget.SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                startSearch(query);
+                return true;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        return true;
     }
 
     @Override
@@ -198,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
     public void addToCart(View view) {
         hideCartAndCard();
         Toast.makeText(this, "you add it to cart", Toast.LENGTH_SHORT).show();
+        item.setBrandName(null);
     }
 
     public void updateView(Result firstResult) {
