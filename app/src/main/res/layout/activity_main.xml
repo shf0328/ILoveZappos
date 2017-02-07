@@ -29,7 +29,11 @@
                     android:layout_gravity="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
+
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="50dp"
                     card_view:cardCornerRadius="4dp"
                     card_view:cardElevation="6dp"
                     android:focusable="true"
@@ -146,24 +150,6 @@
                                 android:textSize="18sp"
                                 />
 
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:orientation="horizontal"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="10dp"
-                            android:layout_marginStart="8dp"
-                            >
-                            <TextView
-                                android:id="@+id/text_item_origin_price"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/item_origin_price"
-                                android:textStyle="bold"
-                                android:textSize="18sp"
-                                android:layout_marginEnd="10dp"
-                                />
                             <TextView
                                 android:id="@+id/text_item_origin_price_detail"
                                 android:layout_width="wrap_content"
@@ -171,9 +157,8 @@
                                 android:text="@{item.originalPrice}"
                                 android:textStyle="bold"
                                 android:textSize="18sp"
-                                android:layout_marginEnd="20dp"
+                                android:layout_marginEnd="10dp"
                                 />
-
                             <TextView
                                 android:id="@+id/text_item_discount"
                                 android:layout_width="wrap_content"
@@ -193,7 +178,10 @@
                                 android:textSize="18sp"
                                 app:discountColor="@{item.percentOff}"
                                 />
+
                         </LinearLayout>
+
+
 
                         <LinearLayout
                             android:orientation="horizontal"
@@ -239,6 +227,7 @@
                     android:layout_gravity="center"
                     android:layout_width="240dp"
                     android:layout_height="130dp"
+                    android:layout_margin="20dp"
                     app:srcCompat="@drawable/zappos"
                     android:id="@+id/imageView"
                     android:layout_marginTop="10dp"

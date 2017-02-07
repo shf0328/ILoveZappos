@@ -9,8 +9,7 @@ import android.os.Bundle;
 
 public class RetainedFragment extends Fragment {
     // data object we want to retain
-    private Result data;
-
+    private BundleData bd;
     // this method is only called once for this fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -18,11 +17,11 @@ public class RetainedFragment extends Fragment {
         setRetainInstance(true);
     }
 
-    public void setData(Result data) {
-        this.data = data;
+    public void setData(BundleData bd) {
+        this.bd = bd;
     }
 
-    public Result getData() {
-        return data;
+    public BundleData getBundleData() {
+        return this.bd;
     }
 }

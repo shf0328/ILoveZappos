@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
 
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import me.huafeng.ilovezappos.databinding.ActivityMainBinding;
@@ -41,10 +42,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Result item;
-    private ZapposApi myZappoSerice;
+
+    // use a self defined class BundleData to store
+    // persist data: api, search result, search query
+    // in case they lose when in behaivor like rotation
+    private BundleData bd;
     private RetainedFragment dataFragment;
-    private String querySent;
+
     private ClipboardManager clipboard = null;
     final Handler handler = new Handler();
     SearchView mySearchView;
@@ -63,30 +67,36 @@ public class MainActivity extends AppCompatActivity {
             // add the fragment
             dataFragment = new RetainedFragment();
             fm.beginTransaction().add(dataFragment, "data").commit();
-            // load the data from the web
-            item = new Result();
-            dataFragment.setData(item);
+
+
+            // initial retrofit api
+            Retrofit retrofit = new Retrofit.Builder()
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .baseUrl("https://api.zappos.com/")
+                    .build();
+            ZapposApi myZappoSerice = retrofit.create(ZapposApi.class);
+            Result result = new Result();
+
+            bd = new BundleData();
+            bd.setQuery(null);
+            bd.setMyZappoSerice(myZappoSerice);
+            bd.setResult(result);
+
+            dataFragment.setData(bd);
         }else {
-            item = dataFragment.getData();
+            bd = dataFragment.getBundleData();
         }
 
 
 
         // data binding
         ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        binding.setItem(item);
-        if (item.getBrandName() == null){
+        binding.setItem(bd.getResult());
+        if (bd.getResult().getBrandName() == null){
             hideCartAndCard();
         }else {
             showCartAndCard();
         }
-
-        // initial retrofit api
-        Retrofit retrofit = new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create())
-                .baseUrl("https://api.zappos.com/")
-                .build();
-        myZappoSerice = retrofit.create(ZapposApi.class);
 
         // enable click url
         TextView text_link = (TextView) findViewById(R.id.text_item_url);
@@ -126,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
         return true;
     }
 
@@ -154,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     public void hideCartAndCard() {
         View card = findViewById(R.id.card_view);
         card.setVisibility(View.GONE);
@@ -170,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startSearch(final String query) {
         if (query.length() != 0){
-            Call<ItemBundle> call = myZappoSerice.getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
+            Call<ItemBundle> call = bd.getMyZappoSerice().getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
             call.enqueue(new Callback<ItemBundle>() {
                 @Override
                 public void onResponse(Call<ItemBundle> call, Response<ItemBundle> response) {
@@ -183,10 +193,10 @@ public class MainActivity extends AppCompatActivity {
                     Result firstResult = body.getResults().get(0);
                     // update data and view
                     updateView(firstResult);
-                    querySent = query;
+                    bd.setQuery(query);
                     showCartAndCard();
 
-                    //mySearchView.setIconified(true);
+                    // leave focus to show all data
                     mySearchView.clearFocus();
 
                 }
@@ -208,23 +218,23 @@ public class MainActivity extends AppCompatActivity {
     public void addToCart(View view) {
         hideCartAndCard();
         Toast.makeText(this, "you add it to cart", Toast.LENGTH_SHORT).show();
-        item.setBrandName(null);
+        bd.getResult().setBrandName(null);
     }
 
     public void updateView(Result firstResult) {
         // notify data binding
-        item.setBrandName(firstResult.getBrandName());
-        item.setProductName(firstResult.getProductName());
-        item.setOriginalPrice(firstResult.getOriginalPrice());
-        item.setPercentOff(firstResult.getPercentOff());
-        item.setPrice(firstResult.getPrice());
-        item.setProductUrl(firstResult.getProductUrl());
-        item.setThumbnailImageUrl(firstResult.getThumbnailImageUrl());
+        bd.getResult().setBrandName(firstResult.getBrandName());
+        bd.getResult().setProductName(firstResult.getProductName());
+        bd.getResult().setOriginalPrice(firstResult.getOriginalPrice());
+        bd.getResult().setPercentOff(firstResult.getPercentOff());
+        bd.getResult().setPrice(firstResult.getPrice());
+        bd.getResult().setProductUrl(firstResult.getProductUrl());
+        bd.getResult().setThumbnailImageUrl(firstResult.getThumbnailImageUrl());
     }
 
     public void startWebBrower(){
-        if (item.getProductUrl() != null){
-            String url = item.getProductUrl();
+        if (bd.getResult().getProductUrl() != null){
+            String url = bd.getResult().getProductUrl();
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse(url));
             startActivity(intent);
@@ -235,7 +245,8 @@ public class MainActivity extends AppCompatActivity {
         Intent intent=new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-        String keyTerm = getString(R.string.key_sentence) + querySent;
+        String keyTerm = getString(R.string.key_sentence) + bd.getQuery();
+        Log.v("user", keyTerm);
         intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
         startActivity(Intent.createChooser(intent, "Share to"));
     }
