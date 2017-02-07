@@ -23,28 +23,6 @@
                 android:animateLayoutChanges="true"
                 >
 
-                <android.support.v7.widget.CardView
-                    android:id="@+id/card_view_search"
-                    android:layout_gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    card_view:cardCornerRadius="4dp"
-                    card_view:cardElevation="6dp"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:clickable="true"
-                    >
-
-                <SearchView
-                    android:id="@+id/search"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/listPreferredItemHeight"
-                    app:theme="@style/SearchViewTheme"
-                    />
-                </android.support.v7.widget.CardView>
 
                 <android.support.v7.widget.CardView
                     android:id="@+id/card_view"
@@ -255,7 +233,6 @@
                     </LinearLayout>
 
                 </android.support.v7.widget.CardView>
-
 
 
                 <ImageView
