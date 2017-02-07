@@ -1,36 +1,25 @@
 package me.huafeng.ilovezappos;
 
 import android.app.FragmentManager;
-import android.content.ClipData;
-import android.content.ClipDescription;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.databinding.BindingAdapter;
 import android.databinding.DataBindingUtil;
+import android.graphics.Paint;
 import android.net.Uri;
-import android.support.design.widget.AppBarLayout;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.Handler;
-
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import me.huafeng.ilovezappos.databinding.ActivityMainBinding;
@@ -42,16 +31,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-
     // use a self defined class BundleData to store
     // persist data: api, search result, search query
     // in case they lose when in behaivor like rotation
     private BundleData bd;
     private RetainedFragment dataFragment;
 
-    private ClipboardManager clipboard = null;
+
     final Handler handler = new Handler();
     SearchView mySearchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,13 +50,11 @@ public class MainActivity extends AppCompatActivity {
         // find the retained fragment on activity restarts
         FragmentManager fm = getFragmentManager();
         dataFragment = (RetainedFragment) fm.findFragmentByTag("data");
-
         // create the fragment and data the first time
         if (dataFragment == null) {
             // add the fragment
             dataFragment = new RetainedFragment();
             fm.beginTransaction().add(dataFragment, "data").commit();
-
 
             // initial retrofit api
             Retrofit retrofit = new Retrofit.Builder()
@@ -75,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                     .baseUrl("https://api.zappos.com/")
                     .build();
             ZapposApi myZappoSerice = retrofit.create(ZapposApi.class);
+            // initial search result
             Result result = new Result();
 
             bd = new BundleData();
@@ -143,26 +131,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // listen clipboard for share text input
-        if (clipboard == null ) {
-            clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        }
-        if (clipboard.hasPrimaryClip()) {
-            if (clipboard.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-                ClipData clipData = clipboard.getPrimaryClip();
-                CharSequence copyText = clipData.getItemAt(0).getText();
-                String keySentence = getString(R.string.key_sentence);
-                if ((copyText.length() > keySentence.length()) &&
-                        (copyText.subSequence(0,keySentence.length()).toString().equals(keySentence))) {
-                    // start search by term pass in
-                    startSearch(copyText.subSequence(keySentence.length(),copyText.length()).toString());
-                    // clear clipboard
-                    clipboard.setPrimaryClip(ClipData.newPlainText(null, ""));
+        // detect sharelink
+        Intent intent = getIntent();
+        if (intent != null) {
+            String dataString = intent.getDataString();
+            if(dataString!=null){
+                Log.v("user", dataString);
+                String query = dataString.substring(getString(R.string.key_sentence).length());
+                if((bd.getQuery()== null) || (bd.getQuery().equals(query))) {
+                    startSearch(query);
                 }
             }
+
         }
     }
-
 
     public void hideCartAndCard() {
         View card = findViewById(R.id.card_view);
@@ -180,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void startSearch(final String query) {
         if (query.length() != 0){
+            // call progress bar
+            ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            progressBar.setVisibility(View.VISIBLE);
             Call<ItemBundle> call = bd.getMyZappoSerice().getUser(query, "b743e26728e16b81da139182bb2094357c31d331");
             call.enqueue(new Callback<ItemBundle>() {
                 @Override
@@ -208,8 +193,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // leave focus on keyboard
-
+            // close progress bar
+            progressBar.setVisibility(View.GONE);
         }else {
             Toast.makeText(this, "you need to type something to search", Toast.LENGTH_SHORT).show();
         }
@@ -219,8 +204,10 @@ public class MainActivity extends AppCompatActivity {
         hideCartAndCard();
         Toast.makeText(this, "you add it to cart", Toast.LENGTH_SHORT).show();
         bd.getResult().setBrandName(null);
+        mySearchView.setQuery("", false);
     }
 
+    // search over and update view
     public void updateView(Result firstResult) {
         // notify data binding
         bd.getResult().setBrandName(firstResult.getBrandName());
@@ -232,40 +219,19 @@ public class MainActivity extends AppCompatActivity {
         bd.getResult().setThumbnailImageUrl(firstResult.getThumbnailImageUrl());
     }
 
-    public void startWebBrower(){
-        if (bd.getResult().getProductUrl() != null){
-            String url = bd.getResult().getProductUrl();
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
-            startActivity(intent);
+    // some adapters to execute complex behavior
+    @BindingAdapter({"bind:visible"})
+    public static void changeVisiblity(TextView view, String percentOff) {
+        if (percentOff == null) {
+            return;
+        }
+        if (percentOff.equals("0%")){
+            view.setVisibility(View.GONE);
+        }else {
+            view.setVisibility(View.VISIBLE);
+            view.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
         }
     }
-
-    public void shareThisItem(){
-        Intent intent=new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Share");
-        String keyTerm = getString(R.string.key_sentence) + bd.getQuery();
-        Log.v("user", keyTerm);
-        intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
-        startActivity(Intent.createChooser(intent, "Share to"));
-    }
-
-    public void animation(final TextView tv) {
-        tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorPrimaryDark, null));
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
-                } catch (Exception e) {
-                    // Auto-generated catch block
-                    Toast.makeText(MainActivity.this, "Oh, something wrongs", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
-        handler.postDelayed(runnable, 200);
-        }
 
     @BindingAdapter({"bind:discountColor"})
     public static void changeColor(TextView view, String percentOff) {
@@ -285,5 +251,41 @@ public class MainActivity extends AppCompatActivity {
         Picasso.with(view.getContext())
                 .load(thumbnailImageUrl)
                 .into(view);
+    }
+
+
+    public void startWebBrower(){
+        if (bd.getResult().getProductUrl() != null){
+            String url = bd.getResult().getProductUrl();
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
+        }
+    }
+
+    public void shareThisItem(){
+        Intent intent=new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Check this");
+        String keyTerm = getString(R.string.key_sentence) + bd.getQuery();
+        intent.putExtra(Intent.EXTRA_TEXT, keyTerm);
+        startActivity(Intent.createChooser(intent, "Share to"));
+    }
+
+    // simple click effect for share and webbroswer
+    public void animation(final TextView tv) {
+        tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorPrimaryDark, null));
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    tv.setTextColor(ResourcesCompat.getColor(getResources(), R.color.colorAccent, null));
+                } catch (Exception e) {
+                    // Auto-generated catch block
+                    Toast.makeText(MainActivity.this, "Oh, something wrongs", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+        handler.postDelayed(runnable, 200);
     }
 }

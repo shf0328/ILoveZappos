@@ -10,7 +10,7 @@
     <string name="item_discount">Discount: </string>
     <string name="item_url">More detail? Click Me</string>
     <string name="item_share">Share this item</string>
-    <string name="key_sentence">#Copy Me and Open Zappos#</string>
+    <string name="key_sentence">http://huafeng.me/app/ilovezappos/share/</string>
     <string name="app_label">Zappos</string>
-    <string name="search_hint">Search...</string>
+    <string name="search_hint">Search…</string>
 </resources>

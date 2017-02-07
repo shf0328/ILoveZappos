@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
+
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -21,8 +23,15 @@
                 android:layout_height="800dp"
                 android:orientation="vertical"
                 android:animateLayoutChanges="true"
+                android:gravity="center"
                 >
-
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    />
 
                 <android.support.v7.widget.CardView
                     android:id="@+id/card_view"
@@ -33,7 +42,7 @@
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="50dp"
+                    android:layout_marginBottom="10dp"
                     card_view:cardCornerRadius="4dp"
                     card_view:cardElevation="6dp"
                     android:focusable="true"
@@ -49,7 +58,7 @@
                             android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_margin="8dp"
+                            android:layout_margin="5dp"
                             >
                             <android.support.v7.widget.CardView
                                 android:id="@+id/card_view2"
@@ -84,7 +93,7 @@
                                     android:text="@string/item_brand"
                                     android:textStyle="bold"
                                     android:textColor="@color/colorPrimaryDark"
-                                    android:textSize="18sp"
+                                    android:textSize="20sp"
                                     android:layout_margin="5dp"
                                     />
                                 <TextView
@@ -94,16 +103,17 @@
                                     android:text="@{item.brandName}"
                                     android:textColor="@color/cardview_dark_background"
                                     android:layout_marginStart="5dp"
+                                    android:textSize="15sp"
                                     android:layout_marginBottom="5dp"
                                     />
                                 <TextView
                                     android:id="@+id/text_item_name"
-                                    android:layout_width="200dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_width="180dp"
+                                    android:layout_height="match_parent"
                                     android:text="@string/item_name"
                                     android:textStyle="bold"
                                     android:textColor="@color/colorPrimaryDark"
-                                    android:textSize="18sp"
+                                    android:textSize="20sp"
                                     android:layout_marginStart="5dp"
                                     />
                                 <TextView
@@ -113,7 +123,9 @@
                                     android:text="@{item.productName}"
                                     android:textColor="@color/cardview_dark_background"
                                     android:layout_margin="5dp"
-                                    android:lines="3"
+                                    android:textSize="15sp"
+                                    android:scrollHorizontally="false"
+                                    android:minLines="2"
                                     />
 
 
@@ -126,7 +138,7 @@
                             android:orientation="horizontal"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="10dp"
+                            android:layout_marginBottom="5dp"
                             android:layout_marginStart="8dp"
                             >
                             <TextView
@@ -144,6 +156,7 @@
                                 android:id="@+id/text_item_price_detail"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
                                 android:text="@{item.price}"
                                 android:textStyle="bold"
                                 android:textColor="@color/colorPrimaryDark"
@@ -158,6 +171,7 @@
                                 android:textStyle="bold"
                                 android:textSize="18sp"
                                 android:layout_marginEnd="10dp"
+                                app:visible="@{item.percentOff}"
                                 />
                             <TextView
                                 android:id="@+id/text_item_discount"
@@ -166,7 +180,8 @@
                                 android:text="@string/item_discount"
                                 android:textStyle="bold"
                                 android:textSize="18sp"
-                                android:layout_marginEnd="10dp"
+                                android:layout_marginEnd="5dp"
+
                                 app:discountColor="@{item.percentOff}"
                                 />
                             <TextView
@@ -226,9 +241,9 @@
                 <ImageView
                     android:layout_gravity="center"
                     android:layout_width="240dp"
-                    android:layout_height="130dp"
+                    android:layout_height="200dp"
                     android:layout_margin="20dp"
-                    app:srcCompat="@drawable/zappos"
+                    app:srcCompat="@drawable/zlogo"
                     android:id="@+id/imageView"
                     android:layout_marginTop="10dp"
                     />
