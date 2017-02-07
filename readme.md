@@ -9,15 +9,23 @@ zappos commodities and show the 1st relative item.
 
 The android toolbar searchview, card view and
 floating action button are used to approach
-Material Design. Retrofit is used to handle
+Material Design. Some animation is shown when add commodity
+to cart.
+
+And configuration changes like rotation screen is handled so
+activity will reload the saved data.
+
+![image](https://github.com/shf0328/ILoveZappos/raw/master/images/demo.jpg)
+
+Retrofit is used to handle
 the REST api. Databinding is used for the product
 page and some simple effects, like the highlight of
 the discount.
 
-[img] no discount [img] discount
-
+![image](https://github.com/shf0328/ILoveZappos/raw/master/images/no_discount.jpg)![image](https://github.com/shf0328/ILoveZappos/raw/master/images/demo.jpg)
 
 And share function is realized by register app to handle
 specific link like below.
 
-[img] to share [img] recieve share
+![image](https://github.com/shf0328/ILoveZappos/raw/master/images/to_share.jpg)
+![image](https://github.com/shf0328/ILoveZappos/raw/master/images/receive_share.jpg)
