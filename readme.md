@@ -5,7 +5,7 @@ app called ILoveZappos.
 This App take user input as a keyword to search among
 zappos commodities and show the 1st relative item.
 
-![image](http://github.com/shf0328/ILoveZappos/raw/master/images/demo.png)
+![image](https://github.com/shf0328/ILoveZappos/raw/master/images/demo.jpg)
 
 The android toolbar searchview, card view and
 floating action button are used to approach
